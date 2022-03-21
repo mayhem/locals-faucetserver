@@ -6,9 +6,18 @@ if (!process.argv[2]) {
 	process.exit();
 }
 
-var secretSeed = lightwallet.keystore.generateRandomSeed();
-lightwallet.keystore.deriveKeyFromPassword(process.argv[2], (err, pwDerivedKey) => {
-	var keystore = new lightwallet.keystore(secretSeed, pwDerivedKey);
-	keystore.generateNewAddress(pwDerivedKey, 1);
-	console.log(keystore.serialize());
+keyStore.createVault({
+  password: process.argv[2],
+}, function (err, ks) {
+  ks.keyFromPassword(password, function (err, pwDerivedKey) {
+    if (err) throw err;
+
+    ks.generateNewAddress(pwDerivedKey, 5);
+    var addr = ks.getAddresses();
+
+    ks.passwordProvider = function (callback) {
+      var pw = prompt("Please enter password", "Password");
+      callback(null, pw);
+    };
+  });
 });
